@@ -12,7 +12,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
-      - "443:443"
     environment:
       # Local dev: ":80" (HTTP only). Production: your domain, e.g.
       # "openfamily.example.com" (Caddy provisions Let's Encrypt automatically).
