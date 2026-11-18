@@ -16,18 +16,9 @@ RUN go mod download
 
 # Build a static binary (migrations are embedded via go:embed).
 COPY backend/ ./
-COPY .git/ /git/
-RUN resolved_ref="${GIT_COMMIT}"; \
-    if [ -z "${resolved_ref}" ] || [ "${resolved_ref}" = "dev" ]; then \
-      head_value="$(cat /git/HEAD)"; \
-      case "${head_value}" in \
-        "ref: "*) ref_path="${head_value#ref: }"; \
-          resolved_ref="$(cat "/git/${ref_path}" 2>/dev/null || awk -v ref="${ref_path}" '$2 == ref { print $1 }' /git/packed-refs 2>/dev/null)" ;; \
-        *) resolved_ref="${head_value}" ;; \
-      esac; \
-    fi; \
+RUN set -eu; \
+    resolved_ref="${GIT_COMMIT:-unknown}"; \
     short_ref="$(printf '%s' "${resolved_ref}" | cut -c1-7)"; \
-    test -n "${short_ref}"; \
     CGO_ENABLED=0 GOOS=linux go build -trimpath \
       -ldflags="-s -w -X github.com/wheresfrank/openfamily/backend/internal/config.buildVersion=${short_ref}" \
       -o /out/server ./cmd/server
