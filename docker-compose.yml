@@ -7,8 +7,9 @@ name: openfamily
 
 services:
   caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
     ports:
       - "80:80"
       - "443:443"
@@ -20,7 +21,6 @@ services:
       # Production: PUSH_ADDRESS=push.example.com and CADDYFILE=Caddyfile.with-push.
       PUSH_ADDRESS: ${PUSH_ADDRESS:-}
     volumes:
-      - ./caddy/${CADDYFILE:-Caddyfile}:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -92,7 +92,7 @@ services:
       # recreating services against a bogus "/repo/apk" stub. The updater
       # passes REPO_DIR (resolved from its own mount) on every compose call;
       # plain host-side invocations leave it unset and get the project dir.
-      - ${REPO_DIR:-.}/apk:/data/apk
+      - apk_cache:/data/apk
       - deploy_meta:/data/deploy
     depends_on:
       postgres:
@@ -173,6 +173,7 @@ services:
         condition: service_healthy
 
 volumes:
+  apk_cache:
   caddy_data:
   caddy_config:
   pgdata:
